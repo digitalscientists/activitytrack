@@ -11,9 +11,8 @@ module ActivityTracker
     end
 
     def call env
-      if env['REQUEST_PATH'] =~ /^\/track_activity.+/
+      if env['PATH_INFO'] =~ /^\/track_activity.*/
         [200, {'Content-Type' => 'text/html'}, ['tracking activity1!!']]   
-
       else
         @app.call env
       end
