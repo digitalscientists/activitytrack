@@ -13,7 +13,7 @@ describe ActivityTracker::App do
   let(:headers) { {'Content-Type' => 'text/html'} }
   let(:content) {'not interesting'}
 
-  describe 'when url does not include "/track_activity"' do
+  describe 'url does not include "/track_activity"' do
 
     it "does not intercept request" do
       get '/'
@@ -22,11 +22,34 @@ describe ActivityTracker::App do
 
   end
   
-  describe 'when url does include "/track_activity"' do
+  describe 'url does include "/track_activity"' do
 
-    it "does intercept request" do
-      get '/track_activity'
-      last_response.body.should eq('tracking activity1!!')
+    describe 'no params sent' do
+      it "does not intercept request" do
+        get '/track_activity'
+        last_response.body.should eq('not interesting')
+      end
+    end
+
+    describe 'there is no user_id sent' do
+      it "does not intercept request" do
+        get '/track_activity', :action => 1
+        last_response.body.should eq('not interesting')
+      end
+    end
+
+    describe 'there is no action sent' do
+      it "does not intercept request" do
+        get '/track_activity', :user_id => 1
+        last_response.body.should eq('not interesting')
+      end
+    end
+
+    describe 'user_id and action are sent' do
+      it "does not intercept request" do
+        get '/track_activity', :user_id => 1, :action => 1
+        last_response.body.should eq('tracking activity1!!')
+      end
     end
 
   end
