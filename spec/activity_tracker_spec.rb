@@ -47,8 +47,8 @@ describe ActivityTracker::App do
 
     describe 'user_id and action are sent' do
       it "does intercept request" do
-        ActivityTracker::Interception.any_instance.should_receive(:track_activity).with(any_args())
-        ActivityTracker::Interception.any_instance.stub(:result).and_return([])
+        ActivityTracker::Interception.any_instance.should_receive(:track_activity)
+        ActivityTracker::Interception.any_instance.stub(:result).and_return([200, {}, []])
         get '/track_activity', :user_id => 1, :act=> 1
       end
     end
