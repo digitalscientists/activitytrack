@@ -8,6 +8,8 @@ end
 require 'rack'
 require 'moneta'
 require 'rack/moneta_store'
+require 'net/http'
+require 'json'
 
 #use Rack::MonetaStore, :Memory
 
@@ -22,7 +24,7 @@ module ActivityTracker
       interception = Interception.new env
       if interception.intercept?
         interception.track_activity
-        [200, {'Content-Type' => 'text/html'}, [interception.result.inspect]]
+        interception.result
       else
         @app.call env
       end
@@ -61,7 +63,12 @@ module ActivityTracker
     end
 
     def result
-      batch
+      if @result
+        ok = @result.body =~ /\"ok\":true/
+         [( ok ? 200 : 400), {'Content-Type' => 'text/html'}, [ok ? 'acivity stored' : 'failed to store activity']]
+      else
+         [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
+      end
     end
 
   private
@@ -75,7 +82,10 @@ module ActivityTracker
     end
 
     def push_batch
-
+      net = Net::HTTP.new('localhost',9200)
+      es_request = Net::HTTP::Post.new('tracking/activity/_bulk')
+      es_request.body = batch_prepared_for_store
+      @result = net.request es_request
     end
 
     def clear_batch
@@ -83,7 +93,7 @@ module ActivityTracker
     end
 
     def batch_is_full?
-      batch.size == 50 
+      batch.size == 50
     end
 
     def batch
@@ -92,6 +102,15 @@ module ActivityTracker
 
     def store
       @env['rack.moneta_store']
+    end
+  
+    def batch_prepared_for_store
+      batch.map do |act|
+        [
+          {'index' => {'_index' => 'tracking', '_type' => 'activity',}}.to_json,
+          act.to_json
+        ]
+      end.flatten.join("\n")
     end
 
   end
