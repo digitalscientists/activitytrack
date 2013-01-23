@@ -13,9 +13,6 @@ require 'rack/moneta_store'
 
 module ActivityTracker
   class App
-    #def self.call env
-    #  new self
-    #end
 
     def initialize app
       @app = app
@@ -24,33 +21,11 @@ module ActivityTracker
     def call env
       interception = Interception.new env
       if interception.intercept?
-        [200, {'Content-Type' => 'text/html'}, ['tracking activity1!!']]
-        store_action env
+        interception.track_activity
+        [200, {'Content-Type' => 'text/html'}, [interception.result.inspect]]
       else
         @app.call env
       end
-    end
-
-    def store_action env
-      store(env)['activity_cache'] = store(env).fetch('activity_cache', []) << 1
-
-      [200, {'Content-Type' => 'text/html'}, [store(env)['activity_cache'].inspect]]
-      #Net::Http.new('http://localhost:9200').post query(env)
-    end
-
-  private
-
-    def store env
-      env['rack.moneta_store']
-    end
-      
-    def query env
-      @query ||= Rack::Utils.parse_query(env['QUERY_STRING'])
-    end
-
-    def valid_params? env
-      params = query(env)
-      params.keys.include?('user_id') and params.keys.include?('act')
     end
 
   end
@@ -75,6 +50,49 @@ module ActivityTracker
     def intercept?
       valid_path? and valid_params?
     end
+
+    def track_activity
+      add_to_batch activity_params
+      if batch_is_full?
+        push_batch
+        clear_batch
+      end
+    end
+
+    def result
+      batch
+    end
+
+  private
+
+    def activity_params
+      request.params.select { |k,v| %w{user_id act}.include? k.to_s }
+    end
+
+    def add_to_batch params
+      store['activity_batch'] = batch << params
+    end
+
+    def push_batch
+
+    end
+
+    def clear_batch
+      store['activity_batch'] = []
+    end
+
+    def batch_is_full?
+      batch.size == 50 
+    end
+
+    def batch
+      store.fetch('activity_batch', [])
+    end
+
+    def store
+      @env['rack.moneta_store']
+    end
+
   end
 
 end

@@ -47,27 +47,13 @@ describe ActivityTracker::App do
 
     describe 'user_id and action are sent' do
       it "does intercept request" do
-        app.should_receive(:store_action).with(any_args()).and_return([200, {},[]])
+        ActivityTracker::Interception.any_instance.should_receive(:track_activity).with(any_args())
+        ActivityTracker::Interception.any_instance.stub(:result).and_return([])
         get '/track_activity', :user_id => 1, :act=> 1
       end
     end
 
   end
 
-  describe '#store_action' do
-
-    it 'adds action to batch'
-
-    context 'butch consist of less then 50 actions' do
-      it 'pushes batch to elasticsearch'
-      it 'clears butch'
-    end
-
-    context 'butch consist of 50 actions' do
-      it 'does not push batch to elasticsearch'
-      it 'does not clear butch'
-    end
-
-  end
 
 end
