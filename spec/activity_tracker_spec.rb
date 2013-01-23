@@ -13,7 +13,7 @@ describe ActivityTracker::App do
   let(:headers) { {'Content-Type' => 'text/html'} }
   let(:content) {'not interesting'}
 
-  describe 'url does not include "/track_activity"' do
+  context 'url does not include "/track_activity"' do
 
     it "does not intercept request" do
       get '/'
@@ -22,7 +22,7 @@ describe ActivityTracker::App do
 
   end
   
-  describe 'url does include "/track_activity"' do
+  context 'url does include "/track_activity"' do
 
     describe 'no params sent' do
       it "does not intercept request" do
@@ -33,7 +33,7 @@ describe ActivityTracker::App do
 
     describe 'there is no user_id sent' do
       it "does not intercept request" do
-        get '/track_activity', :action => 1
+        get '/track_activity', :act => 1
         last_response.body.should eq('not interesting')
       end
     end
@@ -46,10 +46,26 @@ describe ActivityTracker::App do
     end
 
     describe 'user_id and action are sent' do
-      it "does not intercept request" do
-        get '/track_activity', :user_id => 1, :action => 1
-        last_response.body.should eq('tracking activity1!!')
+      it "does intercept request" do
+        app.should_receive(:store_action).with(any_args()).and_return([200, {},[]])
+        get '/track_activity', :user_id => 1, :act=> 1
       end
+    end
+
+  end
+
+  describe '#store_action' do
+
+    it 'adds action to batch'
+
+    context 'butch consist of less then 50 actions' do
+      it 'pushes batch to elasticsearch'
+      it 'clears butch'
+    end
+
+    context 'butch consist of 50 actions' do
+      it 'does not push batch to elasticsearch'
+      it 'does not clear butch'
     end
 
   end

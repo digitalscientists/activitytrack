@@ -16,6 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = ActivityTracker::VERSION
 
   gem.add_runtime_dependency 'rack'
+  gem.add_runtime_dependency 'moneta'
 
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'rack-test'
