@@ -31,6 +31,7 @@ module ActivityTracker
   end
 
   class Interception
+
     def initialize env
       @env = env
     end
