@@ -61,7 +61,7 @@ module ActivityTracker
     end
 
     def batch_is_full?
-      batch.size == 50
+      batch.size == ActivityTracker.configuration.batch_size
     end
 
     def batch

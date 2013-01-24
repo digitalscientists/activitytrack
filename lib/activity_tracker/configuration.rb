@@ -5,5 +5,6 @@ module ActivityTracker
     def initialize
       @batch_size = 50
     end
+
   end
 end
