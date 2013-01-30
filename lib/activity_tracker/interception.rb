@@ -11,11 +11,15 @@ module ActivityTracker
     end
 
     def valid_params?
-      (request.params.keys & %w{user_id act}).size == 2
+      (request.params.keys & %w{user_id act_type}).size == 2
     end
 
     def valid_path?
-      request.path_info =~ /^\/track_activity.*/
+      request.path_info =~ /^\/(track_activity|complement_note).*/
+    end
+
+    def update?
+      request.path_info =~ /^\/complement_note.*/
     end
 
     def intercept?
@@ -42,7 +46,7 @@ module ActivityTracker
   private
 
     def activity_params
-      request.params.select { |k,v| %w{user_id act}.include? k.to_s }
+      request.params.select { |k,v| %w{user_id act_type}.include? k.to_s }
     end
 
     def add_to_batch params
