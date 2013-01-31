@@ -245,6 +245,45 @@ describe ActivityTracker::Interception do
       @data['params'].should eq({'key1' => 'key1', 'key2' => 'key2'})
     end
   end 
-  describe '#es_response'
+  describe '#response' do
+    context 'when es response is present' do
+      context 'when insert' do
+        before :each do
+          interception.stub(:insert?).and_return(true)
+        end
+        it 'returns "activity stored" 200 if es returns 200' do
+          interception.stub(:es_response).and_return({:code => 200})
+          interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['acivity stored']])
+        end
+
+        it 'returns "failed to insert data" if es returns else than 200' do
+          interception.stub(:es_response).and_return({:code => 400})
+          interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to insert data']])
+        end
+      end
+      context 'when update' do
+        before :each do
+          interception.stub(:insert?).and_return(false)
+          interception.stub(:update?).and_return(true)
+        end
+        it 'returns "record updated" 200 if es returns 200' do
+          interception.stub(:es_response).and_return({:code => 200})
+          interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['record updated']])
+        end
+
+        it 'returns "failed to update record" if es returns else than 200' do
+          interception.stub(:es_response).and_return({:code => 400})
+          interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to update record']])
+        end
+
+      end
+    end
+    context 'when es response is not present' do
+      it 'returns "activity stored" 200' do
+        interception.stub(:es_response).and_return(nil)
+        interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['acivity stored']])
+      end
+    end
+  end
 
 end

@@ -51,11 +51,31 @@ module ActivityTracker
     end
 
     def response
-      if @raw_es_response
-        ok = @raw_es_response.body =~ /\"ok\":true/
-         [( ok ? 200 : 400), {'Content-Type' => 'text/html'}, [ok ? 'acivity stored' : 'failed to store activity']]
+      unless es_response.nil?
+        if insert?
+          if es_response[:code] == 200
+            [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
+          else
+            [400, {'Content-Type' => 'text/html'}, ['failed to insert data']]
+          end
+        elsif update?
+          if es_response[:code] == 200
+            [200, {'Content-Type' => 'text/html'}, ['record updated']]
+          else
+            [400, {'Content-Type' => 'text/html'}, ['failed to update record']]
+          end
+        end
       else
          [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
+      end
+    end
+
+    def es_response
+      if @raw_es_response.present?
+        @es_response ||= { 
+          :body => JSON.parse(@raw_es_response.body),
+          :code => @raw_es_response.code
+        }
       end
     end
 
