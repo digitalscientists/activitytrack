@@ -177,5 +177,25 @@ describe ActivityTracker::Interception do
       interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id')
     end
   end
+  
+
+
+  describe '#update_record' do
+    before :each do
+      interception.stub(:data_prepared_for_update).and_return('update_data')
+    end
+    it "sends request to elasticsearch server" do
+      interception.should_receive(:es_request).with('update_data')
+      interception.update_record 
+    end
+    it "stores elasticsearch response" do
+      interception.stub(:es_request).and_return('es response')
+      interception.update_record
+      interception.instance_variable_get('@raw_es_response').should eq('es response')
+    end
+  end
+  describe '#es_request' 
+  describe '#data_prepared_for_update' 
+  describe '#es_response'
 
 end

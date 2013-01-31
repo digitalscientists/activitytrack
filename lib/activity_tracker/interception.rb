@@ -38,6 +38,13 @@ module ActivityTracker
       end
     end
 
+    def complement_note
+      update_record
+    end
+    def update_record
+      @raw_es_response = es_request(data_prepared_for_update)
+    end
+
     def result
       if @result
         ok = @result.body =~ /\"ok\":true/
@@ -54,6 +61,7 @@ module ActivityTracker
         "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}"
       end
     end
+
 
   private
 
