@@ -68,7 +68,7 @@ module ActivityTracker
     def push_batch
       net = Net::HTTP.new('localhost',9200)
       es_request = Net::HTTP::Post.new('tracking/activity/_bulk')
-      es_request.body = batch_prepared_for_store
+      es_request.body = batch_prepared_for_push
       @result = net.request es_request
     end
 
@@ -88,7 +88,7 @@ module ActivityTracker
       @env['rack.moneta_store']
     end
   
-    def batch_prepared_for_store
+    def batch_prepared_for_push
       batch.map do |act|
         [
           {'index' => {'_index' => 'tracking', '_type' => 'activity',}}.to_json,
