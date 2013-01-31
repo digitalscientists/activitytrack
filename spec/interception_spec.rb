@@ -165,4 +165,17 @@ describe ActivityTracker::Interception do
     end
   end
 
+  describe '#es_request_path' do
+    it 'generates path for bulk insert' do
+      interception.stub(:insert?).and_return(true)
+      interception.es_request_path.should eq('/tracked_activities/_bulk')
+    end
+    it 'generates path for record update' do
+      request.stub(:params).and_return({'act_type' => 'action_type', 'note_id' => 'note_to_update_id'})
+      interception.stub(:insert?).and_return(false)
+      interception.stub(:update?).and_return(true)
+      interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id')
+    end
+  end
+
 end

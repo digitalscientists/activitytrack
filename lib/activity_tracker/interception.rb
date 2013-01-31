@@ -47,6 +47,14 @@ module ActivityTracker
       end
     end
 
+    def es_request_path
+      if insert?
+        "/tracked_activities/_bulk"
+      elsif update?
+        "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}"
+      end
+    end
+
   private
 
     def activity_params
