@@ -51,6 +51,9 @@ describe ActivityTracker::Interception do
         interception.should_not_receive(:clear_batch)
         interception.track_activity
       end
+
+      it 'executes update que'
+
     end
 
   end
@@ -168,6 +171,18 @@ describe ActivityTracker::Interception do
     before :each do
       interception.stub(:data_prepared_for_update).and_return('update_data')
     end
+
+    context 'record to update found in batch' do
+      it 'pushes update to update que'
+      it 'does not search for record in ES'
+      it 'does not update record'
+    end
+
+    context 'record to update not found in batch' do
+      it 'does searches for record in ES'
+      it 'does updates record'
+    end
+
     it "sends request to elasticsearch server" do
       interception.should_receive(:es_request).with('update_data')
       interception.update_record 
@@ -177,6 +192,9 @@ describe ActivityTracker::Interception do
       interception.update_record
       interception.instance_variable_get('@raw_es_response').should eq('es response')
     end
+
+
+
   end
   describe '#es_request' do
     
