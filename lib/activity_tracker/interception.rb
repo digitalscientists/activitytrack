@@ -42,13 +42,17 @@ module ActivityTracker
       update_record
     end
 
+    def push_batch
+      @raw_es_response = es_request(batch_prepared_for_push)
+    end
+
     def update_record
       @raw_es_response = es_request(data_prepared_for_update)
     end
 
-    def result
-      if @result
-        ok = @result.body =~ /\"ok\":true/
+    def response
+      if @raw_es_response
+        ok = @raw_es_response.body =~ /\"ok\":true/
          [( ok ? 200 : 400), {'Content-Type' => 'text/html'}, [ok ? 'acivity stored' : 'failed to store activity']]
       else
          [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
@@ -86,13 +90,6 @@ module ActivityTracker
 
     def add_to_batch params
       store['activity_batch'] = batch << params
-    end
-
-    def push_batch
-      net = Net::HTTP.new('localhost',9200)
-      es_request = Net::HTTP::Post.new('tracking/activity/_bulk')
-      es_request.body = batch_prepared_for_push
-      @result = net.request es_request
     end
 
     def clear_batch

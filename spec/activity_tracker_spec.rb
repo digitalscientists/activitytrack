@@ -55,7 +55,7 @@ describe ActivityTracker::App do
     describe 'user_id and action are sent' do
       it "does intercept request" do
         ActivityTracker::Interception.any_instance.should_receive(:track_activity)
-        ActivityTracker::Interception.any_instance.stub(:result).and_return([200, {}, []])
+        ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
         get '/track_activity', :user_id => 1, :act_type=> 2, :params => 3
       end
     end
@@ -94,7 +94,7 @@ describe ActivityTracker::App do
     describe 'note_id, action and params are sent' do
       it "does intercept request" do
         ActivityTracker::Interception.any_instance.should_receive(:complement_note)
-        ActivityTracker::Interception.any_instance.stub(:result).and_return([200, {}, []])
+        ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
         get '/complement_note', :note_id => 1, :act_type=> 2, :params => 3
       end
     end

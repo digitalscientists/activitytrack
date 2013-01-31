@@ -13,7 +13,7 @@ module ActivityTracker
         else
           interception.track_activity
         end
-        interception.result
+        interception.response
       else
         @app.call env
       end
