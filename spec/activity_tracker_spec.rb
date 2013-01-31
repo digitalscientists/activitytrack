@@ -70,7 +70,7 @@ describe ActivityTracker::App do
       end
     end
 
-    context 'there is no note_id sent' do
+    context 'there is no user_id sent' do
       it "does not intercept request" do
         get '/complement_note', :act_type => 1, :params => 3
         last_response.body.should eq('not interesting')
@@ -79,23 +79,23 @@ describe ActivityTracker::App do
 
     context 'there is no action sent' do
       it "does not intercept request" do
-        get '/complement_note', :note_id => 1, :params => 3
+        get '/complement_note', :user_id => 1, :params => 3
         last_response.body.should eq('not interesting')
       end
     end
       
     context 'there is no params sent' do
       it "does not intercept request" do
-        get '/complement_note', :note_id => 1, :act_type => 2
+        get '/complement_note', :user_id => 1, :act_type => 2
         last_response.body.should eq('not interesting')
       end
     end
 
-    describe 'note_id, action and params are sent' do
+    describe 'user_id, action and params are sent' do
       it "does intercept request" do
         ActivityTracker::Interception.any_instance.should_receive(:complement_note)
         ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
-        get '/complement_note', :note_id => 1, :act_type=> 2, :params => 3
+        get '/complement_note', :user_id => 1, :act_type=> 2, :params => 3
       end
     end
 

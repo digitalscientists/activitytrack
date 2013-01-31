@@ -14,7 +14,7 @@ module ActivityTracker
     end
 
     def update?
-      request.path_info =~ /^\/complement_note.*/ && (request.params.keys & %w{note_id act_type params}).size == 3
+      request.path_info =~ /^\/complement_note.*/ && (request.params.keys & %w{user_id act_type params}).size == 3
     end
 
     def intercept?
@@ -74,7 +74,7 @@ module ActivityTracker
       if insert?
         "/tracked_activities/_bulk"
       elsif update?
-        "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}/_update"
+        "/tracked_activities/#{request.params['act_type']}/#{request.params['user_id']}/_update"
       end
     end
 

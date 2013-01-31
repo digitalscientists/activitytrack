@@ -115,7 +115,7 @@ describe ActivityTracker::Interception do
   describe '#update?' do
     context 'params are valid' do
       before :each do
-        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2, 'params' => 3})
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
       end
       it 'returns true if request is update when path is "/complement_note"' do
         request.stub!(:path_info).and_return('/complement_note')
@@ -130,8 +130,8 @@ describe ActivityTracker::Interception do
       before :each do
         request.stub!(:path_info).and_return('/complement_note')
       end
-      it 'returns true if params includes "note_id", "act_type" and "params" parametrs' do
-        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2, 'params' => 3})
+      it 'returns true if params includes "user_id", "act_type" and "params" parametrs' do
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
         interception.update?.should be_true
       end
       it 'returns false if request does not include "user_id" parametr' do
@@ -139,11 +139,11 @@ describe ActivityTracker::Interception do
         interception.update?.should_not be_true
       end
       it 'returns false if request does not include "act_type" parametr' do
-        request.stub(:params).and_return({'note_id' => 1, 'params' => 3})
+        request.stub(:params).and_return({'user_id' => 1, 'params' => 3})
         interception.update?.should_not be_true
       end
       it 'returns false if request does not include "params" parametr' do
-        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2})
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2})
         interception.update?.should_not be_true
       end
     end
@@ -155,7 +155,7 @@ describe ActivityTracker::Interception do
       interception.es_request_path.should eq('/tracked_activities/_bulk')
     end
     it 'generates path for record update' do
-      request.stub(:params).and_return({'act_type' => 'action_type', 'note_id' => 'note_to_update_id'})
+      request.stub(:params).and_return({'act_type' => 'action_type', 'user_id' => 'note_to_update_id'})
       interception.stub(:insert?).and_return(false)
       interception.stub(:update?).and_return(true)
       interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id/_update')
