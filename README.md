@@ -12,7 +12,7 @@ Each request should be supplied with params:
 
 request on "/track_activity" will create new document 
 
-example of /track_activity request
+example of /track_activity request:
 
     /track_activity?act_type=item_added&user_id=1&params[_id]=10&params[title]=awesome_title
 
@@ -25,7 +25,7 @@ request on "/complement_note" will find and update specific record.
 /complent_note also should be supplied with query param. This parametr shoulbe single level key-value structure.
 
 
-example of /complement_note request
+example of /complement_note request:
 
     /track_activity?act_type=item_added&user_id=1&query[_id]=10&params[color]=red
 
