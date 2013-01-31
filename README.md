@@ -13,6 +13,7 @@ Each request should be supplied with params:
 request on "/track_activity" will create new document 
 
 example of /track_activity request
+
     /track_activity?act_type=item_added&user_id=1&params[_id]=10&params[title]=awesome_title
 
 this will create {'_id': '10', 'title': 'awesome_title', 'user_id': '1'} in index /tracked_activies/item_added
@@ -25,6 +26,7 @@ request on "/complement_note" will find and update specific record.
 
 
 example of /complement_note request
+
     /track_activity?act_type=item_added&user_id=1&query[_id]=10&params[color]=red
 
 this will search in /tracked_activities/item_added index for document with user_id=1 and _id=10. Then it will set color param to 'red'.
