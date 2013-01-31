@@ -65,11 +65,11 @@ module ActivityTracker
 
     def es_request data
       net = Net::HTTP.new('localhost',9200)
-      if insert?
-        es_request = Net::HTTP::Post.new(es_request_path)
+      es_request = if insert?
+        Net::HTTP::Post
       elsif update?
-        es_request = Net::HTTP::Put.new(es_request_path)
-      end
+        Net::HTTP::Put
+      end.new(es_request_path)
       es_request.body = data
       net.request es_request
     end
