@@ -8,7 +8,11 @@ module ActivityTracker
     def call env
       interception = Interception.new env
       if interception.intercept?
-        interception.track_activity
+        if interception.update?
+          interception.complement_note
+        else
+          interception.track_activity
+        end
         interception.result
       else
         @app.call env

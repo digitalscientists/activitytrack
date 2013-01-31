@@ -18,12 +18,16 @@ module ActivityTracker
       request.path_info =~ /^\/(track_activity|complement_note).*/
     end
 
+    def insert?
+      request.path_info =~ /^\/track_activity.*/ && (request.params.keys & %w{user_id act_type params}).size == 3
+    end
+
     def update?
-      request.path_info =~ /^\/complement_note.*/
+      request.path_info =~ /^\/complement_note.*/ && (request.params.keys & %w{note_id act_type params}).size == 3
     end
 
     def intercept?
-      valid_path? and valid_params?
+      insert? or update?
     end
 
     def track_activity

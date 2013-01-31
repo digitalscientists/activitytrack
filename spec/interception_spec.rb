@@ -72,14 +72,96 @@ describe ActivityTracker::Interception do
 
   end
 
-  describe '#update?' do
-    it 'returns true if request is update when path is "/complement_note"' do
-      request.stub!(:path_info).and_return('/complement_note')
-      interception.update?.should be_true
+  describe '#intercept?' do
+    before :each do
+      interception.stub(:insert?).and_return(false)
+      interception.stub(:update?).and_return(false)
     end
-    it 'returns false if request is update when path is not "/complement_note"' do
-      request.stub!(:path_info).and_return('/not_complement_note')
-      interception.update?.should be_true
+    it 'returns true if request is recognized as insert' do
+      interception.stub(:insert?).and_return(true)
+      interception.intercept?.should be_true
+    end
+    it 'returns true if request is recognized as update' do
+      interception.stub(:update?).and_return(true)
+      interception.intercept?.should be_true
+    end
+    it 'returns false if request is not recognized as insert or update' do
+      interception.intercept?.should_not be_true
+    end
+  end
+
+  describe '#insert?' do
+    context 'params are valid' do
+      before :each do
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+      end
+      it 'returns true if request is update when path is "/track_activity"' do
+        request.stub!(:path_info).and_return('/track_activity')
+        interception.insert?.should be_true
+      end
+      it 'returns false if request is update when path is not "/track_activity"' do
+        request.stub!(:path_info).and_return('/not_track_activity')
+        interception.insert?.should_not be_true
+      end
+    end
+    context 'request path is valid' do
+      before :each do
+        request.stub!(:path_info).and_return('/track_activity')
+      end
+      it 'returns true if params includes "user_id", "act_type" and "params" parametrs' do
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+        interception.insert?.should be_true
+      end
+      it 'returns false if request does not include "user_id" parametr' do
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
+        interception.insert?.should_not be_true
+      end
+      it 'returns false if request does not include "act_type" parametr' do
+        request.stub(:params).and_return({'user_id' => 1, 'params' => 3})
+        interception.insert?.should_not be_true
+      end
+      it 'returns false if request does not include "params" parametr' do
+        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2})
+        interception.insert?.should_not be_true
+      end
+    end
+  end
+
+
+  describe '#update?' do
+    context 'params are valid' do
+      before :each do
+        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2, 'params' => 3})
+      end
+      it 'returns true if request is update when path is "/complement_note"' do
+        request.stub!(:path_info).and_return('/complement_note')
+        interception.update?.should be_true
+      end
+      it 'returns false if request is update when path is not "/track_activity"' do
+        request.stub!(:path_info).and_return('/not_complement_note')
+        interception.update?.should_not be_true
+      end
+    end
+    context 'request path is valid' do
+      before :each do
+        request.stub!(:path_info).and_return('/complement_note')
+      end
+      it 'returns true if params includes "note_id", "act_type" and "params" parametrs' do
+        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2, 'params' => 3})
+        interception.update?.should be_true
+      end
+      it 'returns false if request does not include "user_id" parametr' do
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
+        interception.update?.should_not be_true
+      end
+      it 'returns false if request does not include "act_type" parametr' do
+        request.stub(:params).and_return({'note_id' => 1, 'params' => 3})
+        interception.update?.should_not be_true
+      end
+      it 'returns false if request does not include "params" parametr' do
+        request.stub(:params).and_return({'note_id' => 1, 'act_type' => 2})
+        interception.update?.should_not be_true
+      end
     end
   end
 
