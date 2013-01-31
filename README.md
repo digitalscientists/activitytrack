@@ -44,6 +44,8 @@ this will add activity_tracker.rb to config/initializers of your application.
 there you can set size of batches which is set to 50 by default
 
 TODO
+-------------
+
 add ability to configure index_name.
 add ability to change default pathes for inserta nad update requests.
 
