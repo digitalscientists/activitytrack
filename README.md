@@ -3,12 +3,12 @@ activity track
 
 Gem to track user activity and store it in ElasticSearch and use it to personalize user experience.
 
-This gem is suposed to be used as middleware with rails. When installed it will intercept all requests which path are strarting from "/track_activity" or "/complement_note" and will store data provided with requests into elastic search in tracked_activities index.
+This gem is suposed to be used as middleware with rails. When installed it will intercept all requests which pathes are strarting from "/track_activity" or "/complement_note" and will store data provided with requests into elastic search in tracked_activities index.
 
 Each request should be supplied with params: 
-  user_id - identifier of user who performed an action
-  act_type - action name, this is used as elasticsearch index type
-  params - any information about action
+>  user_id - identifier of user who performed an action
+>  act_type - action name, this is used as elasticsearch index type
+>  params - any information about action
 
 request on "/track_activity" will create new document 
 
