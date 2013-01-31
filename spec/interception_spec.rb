@@ -174,7 +174,7 @@ describe ActivityTracker::Interception do
       request.stub(:params).and_return({'act_type' => 'action_type', 'note_id' => 'note_to_update_id'})
       interception.stub(:insert?).and_return(false)
       interception.stub(:update?).and_return(true)
-      interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id')
+      interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id/_update')
     end
   end
   
@@ -226,30 +226,25 @@ describe ActivityTracker::Interception do
       interception.es_request('request data')
     end
 
-    context 'when insert' do
-      before :each do
-        interception.stub(:insert?).and_return(true)
-      end
-      it 'creates post request' do
-        request.stub(:body=)
-        Net::HTTP::Post.should_receive(:new).and_return(request)
-        interception.es_request('')
-      end
+    it 'creates post request' do
+      request.stub(:body=)
+      Net::HTTP::Post.should_receive(:new).and_return(request)
+      interception.es_request('')
     end
-    context 'when update' do
-      before :each do
-        interception.stub(:insert?).and_return(false)
-        interception.stub(:update?).and_return(true)
-      end
-      it 'creates put request' do
-        request = mock(:request)
-        request.stub(:body=)
-        Net::HTTP::Put.should_receive(:new).and_return(request)
-        interception.es_request('')
-      end
-    end
+
   end
-  describe '#data_prepared_for_update' 
+  describe '#data_prepared_for_update' do
+    before :each do
+      request.stub(:params).and_return({:key1 => 'key1', :key2 => 'key2'})
+      @data = JSON.parse(interception.data_prepared_for_update)
+    end
+    it "creates es update script for each param key" do
+      @data['script'].should match("ctx._source.key1 = key1; ctx._source.key2 = key2")
+    end
+    it "stores params to parametr named 'params'" do
+      @data['params'].should eq({'key1' => 'key1', 'key2' => 'key2'})
+    end
+  end 
   describe '#es_response'
 
 end

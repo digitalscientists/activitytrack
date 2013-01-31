@@ -59,19 +59,22 @@ module ActivityTracker
       if insert?
         "/tracked_activities/_bulk"
       elsif update?
-        "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}"
+        "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}/_update"
       end
     end
 
     def es_request data
       net = Net::HTTP.new('localhost',9200)
-      es_request = if insert?
-        Net::HTTP::Post
-      elsif update?
-        Net::HTTP::Put
-      end.new(es_request_path)
+      es_request = Net::HTTP::Post.new(es_request_path)
       es_request.body = data
       net.request es_request
+    end
+
+    def data_prepared_for_update
+      {
+        :script => request.params.keys.map { |key| "ctx._source.#{key} = #{key}" }.join('; '),
+        :params => request.params
+      }.to_json
     end
 
 
