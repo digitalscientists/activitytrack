@@ -15,7 +15,7 @@ request on "/track_activity" will create new document
 example of /track_activity request
 -  /track_activity?act_type=item_added&user_id=1&params[_id]=10&params[title]=awesome_title
 
-  this will create {'_id': '10', 'title': 'awesome_title', 'user_id': '1'} in index /tracked_activies/item_added
+this will create {'_id': '10', 'title': 'awesome_title', 'user_id': '1'} in index /tracked_activies/item_added
 
 note that record will not be created instantly. It will be accumulated to batch. When batch will consist of 50 records, they will be pushed ot elasicsarch via single request
 
