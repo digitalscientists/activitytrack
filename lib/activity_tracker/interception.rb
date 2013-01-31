@@ -1,4 +1,3 @@
-
 module ActivityTracker
   class Interception
 
@@ -8,14 +7,6 @@ module ActivityTracker
 
     def request
       @request ||= Rack::Request.new @env
-    end
-
-    def valid_params?
-      (request.params.keys & %w{user_id act_type}).size == 2
-    end
-
-    def valid_path?
-      request.path_info =~ /^\/(track_activity|complement_note).*/
     end
 
     def insert?
@@ -105,7 +96,7 @@ module ActivityTracker
   private
 
     def activity_params
-      request.params.select { |k,v| %w{user_id act_type}.include? k.to_s }
+      request.params.select { |k,v| %w{user_id act_type params}.include? k.to_s }
     end
 
     def add_to_batch params
@@ -131,7 +122,7 @@ module ActivityTracker
     def batch_prepared_for_push
       batch.map do |act|
         [
-          {'index' => {'_index' => 'tracking', '_type' => 'activity',}}.to_json,
+          {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
           act.to_json
         ]
       end.flatten.join("\n")

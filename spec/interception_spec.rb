@@ -55,22 +55,6 @@ describe ActivityTracker::Interception do
 
   end
 
-  describe '#valid_path?' do
-
-    it 'returns true when path starts from "/track_activity"' do
-      request.stub!(:path_info).and_return('/track_activity1')
-      interception.valid_path?.should be_true
-    end
-    it 'returns true when path starts from "/complement_note"' do
-      request.stub!(:path_info).and_return('/complement_note')
-      interception.valid_path?.should be_true
-    end
-    it 'returns false when path starts from any other string' do
-      request.stub!(:path_info).and_return('/some_path')
-      interception.valid_path?.should_not be_true
-    end
-
-  end
 
   describe '#intercept?' do
     before :each do
