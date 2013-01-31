@@ -194,7 +194,61 @@ describe ActivityTracker::Interception do
       interception.instance_variable_get('@raw_es_response').should eq('es response')
     end
   end
-  describe '#es_request' 
+  describe '#es_request' do
+    
+    let(:request) { mock :request }
+
+    before :each do
+      @net = mock(:net)
+      Net::HTTP.stub(:new).and_return(@net)
+      @net.stub(:request)
+      interception.stub(:insert?).and_return(true)
+      interception.stub(:batch_prepared_for_push).and_return('')
+      interception.stub(:es_request_path).and_return('')
+    end
+    it 'creates net object' do
+      Net::HTTP.should_receive(:new)
+      Net::HTTP::Post.stub(:new).and_return(request)
+      request.stub(:body=)
+      interception.es_request('')
+    end
+
+    it 'sends request' do
+      Net::HTTP::Post.stub(:new).and_return(request)
+      request.stub(:body=)
+      @net.should_receive(:request).with(request)
+      interception.es_request('')
+    end
+
+    it 'sets insert data to request body' do
+      Net::HTTP::Post.stub(:new).and_return(request)
+      request.should_receive(:body=).with('request data')
+      interception.es_request('request data')
+    end
+
+    context 'when insert' do
+      before :each do
+        interception.stub(:insert?).and_return(true)
+      end
+      it 'creates post request' do
+        request.stub(:body=)
+        Net::HTTP::Post.should_receive(:new).and_return(request)
+        interception.es_request('')
+      end
+    end
+    context 'when update' do
+      before :each do
+        interception.stub(:insert?).and_return(false)
+        interception.stub(:update?).and_return(true)
+      end
+      it 'creates put request' do
+        request = mock(:request)
+        request.stub(:body=)
+        Net::HTTP::Put.should_receive(:new).and_return(request)
+        interception.es_request('')
+      end
+    end
+  end
   describe '#data_prepared_for_update' 
   describe '#es_response'
 

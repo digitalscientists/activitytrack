@@ -41,6 +41,7 @@ module ActivityTracker
     def complement_note
       update_record
     end
+
     def update_record
       @raw_es_response = es_request(data_prepared_for_update)
     end
@@ -60,6 +61,17 @@ module ActivityTracker
       elsif update?
         "/tracked_activities/#{request.params['act_type']}/#{request.params['note_id']}"
       end
+    end
+
+    def es_request data
+      net = Net::HTTP.new('localhost',9200)
+      if insert?
+        es_request = Net::HTTP::Post.new(es_request_path)
+      elsif update?
+        es_request = Net::HTTP::Put.new(es_request_path)
+      end
+      es_request.body = data
+      net.request es_request
     end
 
 
