@@ -96,37 +96,37 @@ module ActivityTracker
       it 'when insert request generate body for insert request' do
         request.type = :insert
         request.params = [
-          {'act_type' => 'action_one', 'user_id' => 'user_one', 'params' => {'param1' => 1, 'param2' => 2}},
-          {'act_type' => 'action_two', 'user_id' => 'user_two', 'params' => {'param1' => 3, 'param2' => 4}}
+          {'act_type' => 'action_one', 'user_id' => 'user_one', 'params' => {'param1' => 1, 'param2' => 2, '_id' => '1'}},
+          {'act_type' => 'action_two', 'user_id' => 'user_two', 'params' => {'param1' => 3, 'param2' => 4, '_id' => '2'}}
         ]
 
         request.body.should eq([
           '{"index":{"_index":"tracked_activities","_type":"action_one"}}',
-          '{"act_type":"action_one","user_id":"user_one","params":{"param1":1,"param2":2}}',
+          '{"user_id":"user_one","param1":1,"param2":2,"item_id":"1"}',
           '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
-          '{"act_type":"action_two","user_id":"user_two","params":{"param1":3,"param2":4}}',
+          '{"user_id":"user_two","param1":3,"param2":4,"item_id":"2"}',
         ].join("\n"))
       end
       it 'when find request generate body for find request' do
         request.type = :find
         request.params = {:query => {:user_id => 'u1d', :_id => 'item_id'}}
-        request.body.should eq('{"query":{"term":{"user_id":"u1d","_id":"item_id"}}}')
+        request.body.should eq('{"query":{"term":{"user_id":"u1d","item_id":"item_id"}}}')
       end
       it 'when update request generate body for update request' do
         request.type = :update
         request.params = {:params => {'new_attr1' => 'new value 1', 'new_attr2' => 'new value 2'}}
-        request.body.should eq('{"doc":{"new_attr1":"new value 1","new_attr2":"new value 2"}}')
+        request.body.should eq('{"script":"ctx._source.new_attr1 = new_attr1; ctx._source.new_attr2 = new_attr2","params":{"new_attr1":"new value 1","new_attr2":"new value 2"}}')
       end
     end
 
     describe '#process_response' do
       it 'returns array with  first element request status code' do
-        http_response = mock :http_response, :code => 400
+        http_response = mock :http_response, :code => '400'
         request.process_response(http_response).first.should eq(400)
       end
 
       it 'when request is success returns array with second element request body in json' do
-        http_response = mock :http_response, :code => 200, :body => '{"key1": "value1"}'
+        http_response = mock :http_response, :code => '200', :body => '{"key1": "value1"}'
         request.process_response(http_response)[1].should eq({'key1' => 'value1'})
 
       end

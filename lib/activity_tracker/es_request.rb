@@ -42,20 +42,27 @@ module ActivityTracker
     def body
       if @type == :insert
         @params.map do |act|
+          act['params']['item_id'] = act['params']['_id']
+          act['params'].reject!{|k,v| k == '_id'}
           [
             {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
-            act.to_json
+            ({'user_id' => act['user_id']}.merge(act['params'])).to_json
           ]
         end.flatten.join("\n")
       elsif @type == :find
-        { :query => { :term => @params[:query] } }.to_json
+        query = @params[:query].reject{|k,v| k == :_id}
+        query['item_id'] = @params[:query][:_id]
+        { :query => { :term => query } }.to_json
       elsif @type == :update
-        { :doc => @params[:params] }.to_json
+        { 
+          :script => @params[:params].keys.map{ |key| "ctx._source.#{key} = #{key}" }.join('; '),
+          :params => @params[:params] 
+        }.to_json
       end
     end
 
     def process_response response
-      if response.code == 200
+      if response.code == '200'
         [200, JSON.parse(response.body)]
       else
         [400]

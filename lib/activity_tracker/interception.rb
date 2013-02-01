@@ -42,20 +42,23 @@ module ActivityTracker
         add_to_update_que request.params
       else
         resp = EsRequest.find :act_type => request.params['act_type'], :query => request.params['query']
-        note_id = resp[1]['hits']['hits'][0]['_id']  
-        @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params'].merge('user_id' => request.params['user_id'])
+        resp[1]['hits']['hits'].each do |hit|
+          note_id = hit['_id']  
+          @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params'].merge('user_id' => request.params['user_id'])
+        end
+
       end
     end
 
     def record_to_update_in_batch? record_update
       batch.any? do |batch_record| 
-        batch_record[:act_type] == record_update[:act_type] && batch_record[:user_id] == record_update[:user_id] && batch_record[:params][:_id] && record_update[:q][:_id]
+        batch_record['act_type'] == record_update['act_type'] && batch_record['user_id'] == record_update['user_id'] && batch_record['params']['_id'] && record_update['query']['_id']
       end
     end
 
     def execute_update_que
       update_que.select { |update| !record_to_update_in_batch?(update) }.each do |update|
-        EsRequset.update :act_type => params[:act_type], :note_id => note_id, :params => params[:params].merge(:user_id => params[:user_id])
+        EsRequset.update :act_type => params['act_type'], :note_id => note_id, :params => params['params'].merge(:user_id => params['user_id'])
       end
       store['update_que'] = update_que.select { |update| !record_to_update_in_batch?(update) }
     end
@@ -103,7 +106,7 @@ module ActivityTracker
       store['activity_batch'] = batch << params
     end
 
-    def add_to_update_que
+    def add_to_update_que params
       store['update_que'] = update_que << params
     end
 
