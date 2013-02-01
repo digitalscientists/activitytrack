@@ -24,10 +24,12 @@ module ActivityTracker
     end
 
     def path
-      if @pamms
+      if @type == :insert
         "/tracked_activities/_bulk"
-      elsif update?
-        "/tracked_activities/#{request.params['act_type']}/#{request.params['user_id']}/_update"
+      elsif @type == :find
+        "/tracked_activities/#{@params[:act_type]}"
+      elsif @type == :update
+        "/tracked_activities/#{@params[:act_type]}/#{@params[:note_id]}/_update"
       end
     end
 

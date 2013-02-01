@@ -11,6 +11,7 @@ module ActivityTracker
     [:insert, :find, :update].each do |request_type|
 
       describe ".#{request_type}" do
+      let(:request) {mock :es_request}
         after :each do
           EsRequest.send(request_type, :params)
         end
@@ -84,7 +85,9 @@ module ActivityTracker
 
       it 'when update request generates path for update request' do
         request.instance_variable_set('@type', :update)
-        request.path.should eq('/tracked_activities/any_action/note_to_update_id/_update')
+        params[:act_type] = 'any_action'
+        params[:note_id] = 'any_note'
+        request.path.should eq('/tracked_activities/any_action/any_note/_update')
       end
     end
     describe '#body'
