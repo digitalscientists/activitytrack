@@ -1,6 +1,8 @@
 module ActivityTracker
   class EsRequest
 
+    attr_accessor :type, :params
+
     class << self
 
       [:insert, :find, :update].each do |request_type|
@@ -27,9 +29,24 @@ module ActivityTracker
       if @type == :insert
         "/tracked_activities/_bulk"
       elsif @type == :find
-        "/tracked_activities/#{@params[:act_type]}"
+        "/tracked_activities/#{@params[:act_type]}/_search"
       elsif @type == :update
         "/tracked_activities/#{@params[:act_type]}/#{@params[:note_id]}/_update"
+      end
+    end
+
+    def body
+      if @type == :insert
+        @params.map do |act|
+          [
+            {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
+            act.to_json
+          ]
+        end.flatten.join("\n")
+      elsif @type == :find
+        { :query => { :term => @params } }.to_json
+      elsif @type == :update
+        { :doc => @params[:params] }.to_json
       end
     end
 

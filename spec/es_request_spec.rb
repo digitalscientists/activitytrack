@@ -80,7 +80,7 @@ module ActivityTracker
       it 'when find request generates path for find request' do
         request.instance_variable_set('@type', :find)
         params[:act_type] = 'any_action'
-        request.path.should eq("/tracked_activities/any_action")
+        request.path.should eq("/tracked_activities/any_action/_search")
       end
 
       it 'when update request generates path for update request' do
@@ -89,8 +89,36 @@ module ActivityTracker
         params[:note_id] = 'any_note'
         request.path.should eq('/tracked_activities/any_action/any_note/_update')
       end
+
     end
-    describe '#body'
+    describe '#body' do
+      let(:params){ {} }
+      it 'when insert request generate body for insert request' do
+        request.type = :insert
+        request.params = [
+          {'act_type' => 'action_one', 'user_id' => 'user_one', 'params' => {'param1' => 1, 'param2' => 2}},
+          {'act_type' => 'action_two', 'user_id' => 'user_two', 'params' => {'param1' => 3, 'param2' => 4}}
+        ]
+
+        request.body.should eq([
+          '{"index":{"_index":"tracked_activities","_type":"action_one"}}',
+          '{"act_type":"action_one","user_id":"user_one","params":{"param1":1,"param2":2}}',
+          '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
+          '{"act_type":"action_two","user_id":"user_two","params":{"param1":3,"param2":4}}',
+        ].join("\n"))
+      end
+      it 'when find request generate body for find request' do
+        request.type = :find
+        request.params = {:user_id => 'u1d', :_id => 'item_id'}
+        request.body.should eq('{"query":{"term":{"user_id":"u1d","_id":"item_id"}}}')
+      end
+      it 'when update request generate body for update request' do
+        request.type = :update
+        request.params = {:params => {'new_attr1' => 'new value 1', 'new_attr2' => 'new value 2'}}
+        request.body.should eq('{"doc":{"new_attr1":"new value 1","new_attr2":"new value 2"}}')
+      end
+    end
+
     describe '#process_response'
 
 
