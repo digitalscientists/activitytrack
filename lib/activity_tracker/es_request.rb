@@ -50,5 +50,12 @@ module ActivityTracker
       end
     end
 
+    def process_response response
+      if response.code == 200
+        [200, JSON.parse(response.body)]
+      else
+        [400]
+      end
+    end
   end
 end
