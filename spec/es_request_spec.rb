@@ -3,7 +3,7 @@ require 'spec_helper'
 module ActivityTracker
   describe EsRequest do
     let(:net){ mock :net_http_new }
-    let(:request) {mock :es_request}
+    let(:request) {EsRequest.new :abstract_type, :abstract_params}
     before :each do
       EsRequest.stub(:net).and_return(net)
     end
@@ -66,7 +66,27 @@ module ActivityTracker
       end
 
     end
-    describe '#path'
+    describe '#path' do
+      let(:params){ {} }
+      before :each do
+        request.instance_variable_set('@params', params)
+      end
+      it 'when insert request generates path for insert request' do
+        request.instance_variable_set('@type', :insert)
+        request.path.should eq('/tracked_activities/_bulk')
+      end
+
+      it 'when find request generates path for find request' do
+        request.instance_variable_set('@type', :find)
+        params[:act_type] = 'any_action'
+        request.path.should eq("/tracked_activities/any_action")
+      end
+
+      it 'when update request generates path for update request' do
+        request.instance_variable_set('@type', :update)
+        request.path.should eq('/tracked_activities/any_action/note_to_update_id/_update')
+      end
+    end
     describe '#body'
     describe '#process_response'
 

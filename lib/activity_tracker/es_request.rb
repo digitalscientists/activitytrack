@@ -23,5 +23,13 @@ module ActivityTracker
       process_response EsRequest.net.request(http_request)
     end
 
+    def path
+      if @pamms
+        "/tracked_activities/_bulk"
+      elsif update?
+        "/tracked_activities/#{request.params['act_type']}/#{request.params['user_id']}/_update"
+      end
+    end
+
   end
 end
