@@ -51,11 +51,7 @@ describe ActivityTracker::Interception do
         interception.should_not_receive(:clear_batch)
         interception.track_activity
       end
-
-      it 'executes update que'
-
     end
-
   end
 
 
@@ -152,101 +148,63 @@ describe ActivityTracker::Interception do
     end
   end
 
-  describe '#es_request_path' do
-    it 'generates path for bulk insert' do
-      interception.stub(:insert?).and_return(true)
-      interception.es_request_path.should eq('/tracked_activities/_bulk')
-    end
-    it 'generates path for record update' do
-      request.stub(:params).and_return({'act_type' => 'action_type', 'user_id' => 'note_to_update_id'})
-      interception.stub(:insert?).and_return(false)
-      interception.stub(:update?).and_return(true)
-      interception.es_request_path.should eq('/tracked_activities/action_type/note_to_update_id/_update')
-    end
-  end
   
 
 
   describe '#update_record' do
+    let(:update_params) do
+      {
+        'act_type' => 'abs_act',
+        'user_id' => 'abs_user_id',
+        'params' => {'key1' => 'value 1'},
+        'query' => 'abs_query'
+      }
+    end
     before :each do
       interception.stub(:data_prepared_for_update).and_return('update_data')
+      request.stub(:params).and_return(update_params)
     end
 
     context 'record to update found in batch' do
-      it 'pushes update to update que'
-      it 'does not search for record in ES'
-      it 'does not update record'
+
+      before :each do 
+        interception.stub(:record_to_update_in_batch?).and_return true
+      end
+
+      it 'pushes update to update que' do
+        interception.should_receive(:add_to_update_que).with(update_params)
+        interception.update_record
+      end
     end
 
     context 'record to update not found in batch' do
-      it 'does searches for record in ES'
-      it 'does updates record'
-    end
-
-    it "sends request to elasticsearch server" do
-      interception.should_receive(:es_request).with('update_data')
-      interception.update_record 
-    end
-    it "stores elasticsearch response" do
-      interception.stub(:es_request).and_return('es response')
-      interception.update_record
-      interception.instance_variable_get('@raw_es_response').should eq('es response')
-    end
-
-
-
-  end
-  describe '#es_request' do
-    
-    let(:request) { mock :request }
-
-    before :each do
-      @net = mock(:net)
-      Net::HTTP.stub(:new).and_return(@net)
-      @net.stub(:request)
-      interception.stub(:insert?).and_return(true)
-      interception.stub(:batch_prepared_for_push).and_return('')
-      interception.stub(:es_request_path).and_return('')
-    end
-    it 'creates net object' do
-      Net::HTTP.should_receive(:new)
-      Net::HTTP::Post.stub(:new).and_return(request)
-      request.stub(:body=)
-      interception.es_request('')
-    end
-
-    it 'sends request' do
-      Net::HTTP::Post.stub(:new).and_return(request)
-      request.stub(:body=)
-      @net.should_receive(:request).with(request)
-      interception.es_request('')
-    end
-
-    it 'sets insert data to request body' do
-      Net::HTTP::Post.stub(:new).and_return(request)
-      request.should_receive(:body=).with('request data')
-      interception.es_request('request data')
-    end
-
-    it 'creates post request' do
-      request.stub(:body=)
-      Net::HTTP::Post.should_receive(:new).and_return(request)
-      interception.es_request('')
+      let(:es_response) {[200, {'hits' => {'hits' => [{'_id' => '11' }]}}]}
+      before :each do 
+        interception.stub(:record_to_update_in_batch?).and_return false
+      end
+      it 'searches for record in ES' do
+        ActivityTracker::EsRequest.stub(:update)
+        ActivityTracker::EsRequest.should_receive(:find).with({
+          :act_type => 'abs_act',
+          :query => 'abs_query'
+        }).and_return(es_response)
+        interception.update_record
+      end
+      it 'when found in es updates record' do
+        ActivityTracker::EsRequest.stub(:find).and_return(es_response)
+        ActivityTracker::EsRequest.should_receive(:update).with({
+          :act_type => 'abs_act',
+          :note_id => '11',
+          :params => {'key1' => 'value 1', 'user_id' => 'abs_user_id'}
+        })
+        interception.update_record
+      end
+      it 'when not found in es updates record'
     end
 
   end
-  describe '#data_prepared_for_update' do
-    before :each do
-      request.stub(:params).and_return({:key1 => 'key1', :key2 => 'key2'})
-      @data = JSON.parse(interception.data_prepared_for_update)
-    end
-    it "creates es update script for each param key" do
-      @data['script'].should match("ctx._source.key1 = key1; ctx._source.key2 = key2")
-    end
-    it "stores params to parametr named 'params'" do
-      @data['params'].should eq({'key1' => 'key1', 'key2' => 'key2'})
-    end
-  end 
+
+
   describe '#response' do
     context 'when es response is present' do
       context 'when insert' do
@@ -254,12 +212,12 @@ describe ActivityTracker::Interception do
           interception.stub(:insert?).and_return(true)
         end
         it 'returns "activity stored" 200 if es returns 200' do
-          interception.stub(:es_response).and_return({:code => 200})
+          interception.stub(:es_response).and_return([200])
           interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['acivity stored']])
         end
 
         it 'returns "failed to insert data" if es returns else than 200' do
-          interception.stub(:es_response).and_return({:code => 400})
+          interception.stub(:es_response).and_return([400])
           interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to insert data']])
         end
       end
@@ -269,12 +227,12 @@ describe ActivityTracker::Interception do
           interception.stub(:update?).and_return(true)
         end
         it 'returns "record updated" 200 if es returns 200' do
-          interception.stub(:es_response).and_return({:code => 200})
+          interception.stub(:es_response).and_return([200])
           interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['record updated']])
         end
 
         it 'returns "failed to update record" if es returns else than 200' do
-          interception.stub(:es_response).and_return({:code => 400})
+          interception.stub(:es_response).and_return([400])
           interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to update record']])
         end
 

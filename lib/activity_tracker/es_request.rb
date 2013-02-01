@@ -12,6 +12,10 @@ module ActivityTracker
         end
       end
 
+      def net
+        @net ||= Net::HTTP.new('localhost',9200)
+      end
+
     end
 
     def initialize type, params
@@ -44,7 +48,7 @@ module ActivityTracker
           ]
         end.flatten.join("\n")
       elsif @type == :find
-        { :query => { :term => @params } }.to_json
+        { :query => { :term => @params[:query] } }.to_json
       elsif @type == :update
         { :doc => @params[:params] }.to_json
       end

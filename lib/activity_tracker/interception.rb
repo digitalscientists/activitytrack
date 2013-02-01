@@ -34,23 +34,42 @@ module ActivityTracker
     end
 
     def push_batch
-      @raw_es_response = es_request(batch_prepared_for_push)
+      @es_response = EsRequest.insert batch
     end
 
     def update_record
-      @raw_es_response = es_request(data_prepared_for_update)
+      if record_to_update_in_batch? request.params
+        add_to_update_que request.params
+      else
+        resp = EsRequest.find :act_type => request.params['act_type'], :query => request.params['query']
+        note_id = resp[1]['hits']['hits'][0]['_id']  
+        @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params'].merge('user_id' => request.params['user_id'])
+      end
+    end
+
+    def record_to_update_in_batch? record_update
+      batch.any? do |batch_record| 
+        batch_record[:act_type] == record_update[:act_type] && batch_record[:user_id] == record_update[:user_id] && batch_record[:params][:_id] && record_update[:q][:_id]
+      end
+    end
+
+    def execute_update_que
+      update_que.select { |update| !record_to_update_in_batch?(update) }.each do |update|
+        EsRequset.update :act_type => params[:act_type], :note_id => note_id, :params => params[:params].merge(:user_id => params[:user_id])
+      end
+      store['update_que'] = update_que.select { |update| !record_to_update_in_batch?(update) }
     end
 
     def response
       unless es_response.nil?
         if insert?
-          if es_response[:code] == 200
+          if es_response[0] == 200
             [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
           else
             [400, {'Content-Type' => 'text/html'}, ['failed to insert data']]
           end
         elsif update?
-          if es_response[:code] == 200
+          if es_response[0] == 200
             [200, {'Content-Type' => 'text/html'}, ['record updated']]
           else
             [400, {'Content-Type' => 'text/html'}, ['failed to update record']]
@@ -62,12 +81,7 @@ module ActivityTracker
     end
 
     def es_response
-      if @raw_es_response.present?
-        @es_response ||= { 
-          :body => JSON.parse(@raw_es_response.body),
-          :code => @raw_es_response.code
-        }
-      end
+      @es_response
     end
 
     def es_request_path
@@ -76,20 +90,6 @@ module ActivityTracker
       elsif update?
         "/tracked_activities/#{request.params['act_type']}/#{request.params['user_id']}/_update"
       end
-    end
-
-    def es_request data
-      net = Net::HTTP.new('localhost',9200)
-      es_request = Net::HTTP::Post.new(es_request_path)
-      es_request.body = data
-      net.request es_request
-    end
-
-    def data_prepared_for_update
-      {
-        :script => request.params.keys.map { |key| "ctx._source.#{key} = #{key}" }.join('; '),
-        :params => request.params
-      }.to_json
     end
 
 
@@ -101,6 +101,10 @@ module ActivityTracker
 
     def add_to_batch params
       store['activity_batch'] = batch << params
+    end
+
+    def add_to_update_que
+      store['update_que'] = update_que << params
     end
 
     def clear_batch
@@ -115,17 +119,12 @@ module ActivityTracker
       store.fetch('activity_batch', [])
     end
 
+    def update_que
+      store.fetch('update_que', [])
+    end
+
     def store
       @env['rack.moneta_store']
-    end
-  
-    def batch_prepared_for_push
-      batch.map do |act|
-        [
-          {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
-          act.to_json
-        ]
-      end.flatten.join("\n")
     end
 
   end
