@@ -1,8 +1,10 @@
 module ActivityTracker
   class Interception
+    attr_reader :batch
 
     def initialize env
       @env = env
+      @batch = InsertBatch.restore @env['rack.moneta_store']
     end
 
     def request
@@ -22,10 +24,10 @@ module ActivityTracker
     end
 
     def track_activity
-      add_to_batch activity_params
-      if batch_is_full?
+      batch.add 'act_type' => request.params['act_type'], 'params' => request.params['params']
+      if batch.full?
         push_batch
-        clear_batch
+        batch.clear
       end
     end
 
@@ -34,11 +36,11 @@ module ActivityTracker
     end
 
     def push_batch
-      @es_response = EsRequest.insert batch
+      @es_response = EsRequest.insert @batch.data
     end
 
     def update_record
-      if record_to_update_in_batch? request.params
+      if batch.includes_record? 'act_type' => request.params['act_type'], 'params' => request.params['query']
         add_to_update_que request.params
       else
         resp = EsRequest.find :act_type => request.params['act_type'], :query => request.params['query']
@@ -87,39 +89,10 @@ module ActivityTracker
       @es_response
     end
 
-    def es_request_path
-      if insert?
-        "/tracked_activities/_bulk"
-      elsif update?
-        "/tracked_activities/#{request.params['act_type']}/#{request.params['user_id']}/_update"
-      end
-    end
-
-
   private
-
-    def activity_params
-      request.params.select { |k,v| %w{user_id act_type params}.include? k.to_s }
-    end
-
-    def add_to_batch params
-      store['activity_batch'] = batch << params
-    end
 
     def add_to_update_que params
       store['update_que'] = update_que << params
-    end
-
-    def clear_batch
-      store['activity_batch'] = []
-    end
-
-    def batch_is_full?
-      batch.size == ActivityTracker.configuration.batch_size
-    end
-
-    def batch
-      store.fetch('activity_batch', [])
     end
 
     def update_que

@@ -1,15 +1,11 @@
-if defined? Rails
-  require 'activity_tracker/version'
-  require 'activity_tracker/configuration'
-  require 'activity_tracker/es_request'
-  require 'activity_tracker/interception'
-  require 'activity_tracker/app'
-  require 'activity_tracker/railtie'
-else
-  %w{version configuration es_request interception app}.each do |mod|
+%w{version configuration es_request interception insert_batch app}.each do |mod|
+  if defined? Rails
     require File.expand_path(File.dirname(__FILE__) + "/activity_tracker/#{mod}")
-   end
+  else
+    require "activity_tracker/#{mod}"
+  end
 end
+require 'activity_tracker/railtie' if defined? Rails
 
 require 'rack'
 require 'moneta'

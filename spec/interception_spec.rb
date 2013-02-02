@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActivityTracker::Interception do
   let(:interception) { ActivityTracker::Interception.new env}
   let(:env) { {} }
-  let(:request) { mock :request, :path_info => 'path', :params => {:act_type => 1, :params => 2, :other_param => 3} }
+  let(:request) { mock :request, :path_info => 'path', :params => {'act_type' => 1, 'params' => 2, 'other_param' => 3} }
 
 
     before :each do
@@ -11,44 +11,46 @@ describe ActivityTracker::Interception do
     end
 
   describe '#track_activity' do
+    let(:batch) { mock :batch }
   
     before :each do
-      interception.stub(:batch_is_full?).and_return(false)
+      interception.stub(:batch).and_return(batch)
+      batch.stub(:full?).and_return(false)
     end
     
     it 'adds action to batch' do
-      interception.should_receive(:add_to_batch).with({:act_type => 1, :params => 2})
+      batch.should_receive(:add).with({'act_type' => 1, 'params' => 2})
       interception.track_activity
     end
 
     context 'batch consist of less then 50 actions' do
       before :each do
-        interception.stub(:add_to_batch)
-        interception.stub(:batch_is_full?).and_return(true)
+        batch.stub(:add)
+        batch.stub(:full?).and_return(true)
       end
       it 'pushes batch to elasticsearch' do
-        interception.stub(:clear_batch)
+        batch.stub(:clear)
         interception.should_receive(:push_batch)
         interception.track_activity
       end
       it 'clears batch' do
         interception.stub(:push_batch)
-        interception.should_receive(:clear_batch)
+        batch.should_receive(:clear)
         interception.track_activity
       end
     end
 
     context 'batch consist of 50 actions' do
       before :each do
-        interception.stub(:add_to_batch)
-        interception.stub(:batch_is_full?).and_return(false)
+        batch.stub(:add)
+        batch.stub(:full?).and_return(false)
       end
       it 'does not push batch to elasticsearch' do
         interception.should_not_receive(:push_batch)
         interception.track_activity
       end
       it 'does not clear batch' do
-        interception.should_not_receive(:clear_batch)
+        batch.should_not_receive(:clear)
         interception.track_activity
       end
     end
