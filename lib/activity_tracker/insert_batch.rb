@@ -32,6 +32,11 @@ module ActivityTracker
         @storage
       end
 
+      def clear
+        storage[@key] = []
+      end
+
+
     end
   end
 end

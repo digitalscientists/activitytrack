@@ -153,11 +153,19 @@ describe ActivityTracker::Interception do
         'query' => 'abs_query'
       }
     end
+    
+    let(:update_que){mock :update_que}
+
     before :each do
       interception.stub(:data_prepared_for_update).and_return('update_data')
+      interception.stub(:update_que).and_return(update_que)
       request.stub(:params).and_return(update_params)
     end
-
+    it 'pushes update to update que' do
+      update_que.should_receive(:add).with(update_params)
+      interception.update_record
+    end
+=begin
     context 'record to update found in batch' do
 
       before :each do 
@@ -194,49 +202,10 @@ describe ActivityTracker::Interception do
       end
       it 'when not found in es updates record'
     end
+=end
 
   end
 
 
-  describe '#response' do
-    context 'when es response is present' do
-      context 'when insert' do
-        before :each do
-          interception.stub(:insert?).and_return(true)
-        end
-        it 'returns "activity stored" 200 if es returns 200' do
-          interception.stub(:es_response).and_return([200])
-          interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['acivity stored']])
-        end
-
-        it 'returns "failed to insert data" if es returns else than 200' do
-          interception.stub(:es_response).and_return([400])
-          interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to insert data']])
-        end
-      end
-      context 'when update' do
-        before :each do
-          interception.stub(:insert?).and_return(false)
-          interception.stub(:update?).and_return(true)
-        end
-        it 'returns "record updated" 200 if es returns 200' do
-          interception.stub(:es_response).and_return([200])
-          interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['record updated']])
-        end
-
-        it 'returns "failed to update record" if es returns else than 200' do
-          interception.stub(:es_response).and_return([400])
-          interception.response.should eq([400, {'Content-Type' => 'text/html'}, ['failed to update record']])
-        end
-
-      end
-    end
-    context 'when es response is not present' do
-      it 'returns "activity stored" 200' do
-        interception.stub(:es_response).and_return(nil)
-        interception.response.should eq([200, {'Content-Type' => 'text/html'}, ['acivity stored']])
-      end
-    end
-  end
 
 end

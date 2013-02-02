@@ -120,16 +120,21 @@ module ActivityTracker
     end
 
     describe '#process_response' do
+      let(:http_response) { mock(:http_response, :code => '200', :body => '{"key1": "value1"}') }
+
+      before :each do
+        request.stub(:type).and_return(:insert)
+      end
       it 'returns array with  first element request status code' do
-        http_response = mock :http_response, :code => '400'
+        http_response.stub(:code).and_return('400')
         request.process_response(http_response).first.should eq(400)
       end
 
       it 'when request is success returns array with second element request body in json' do
-        http_response = mock :http_response, :code => '200', :body => '{"key1": "value1"}'
         request.process_response(http_response)[1].should eq({'key1' => 'value1'})
-
       end
+
+      it 'adds data about current request to requests log'
     end
 
 

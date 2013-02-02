@@ -16,6 +16,9 @@ module ActivityTracker
         @net ||= Net::HTTP.new('localhost',9200)
       end
 
+      def requests
+        @requests ||= {:insert => [], :find => [], :update => []}
+      end
     end
 
     def initialize type, params
@@ -58,6 +61,7 @@ module ActivityTracker
     end
 
     def process_response response
+      EsRequest.requests[type] << [path, params, response.code, response.body]
       if response.code == '200'
         [200, JSON.parse(response.body)]
       else

@@ -49,7 +49,7 @@ describe ActivityTracker::App do
       it "does intercept request" do
         ActivityTracker::Interception.any_instance.should_receive(:execute_update_que)
         ActivityTracker::Interception.any_instance.should_receive(:track_activity)
-        ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
+        ActivityTracker::App.any_instance.stub(:response).and_return('')
         get '/track_activity', :act_type=> 2, :params => 3
       end
     end
@@ -82,7 +82,9 @@ describe ActivityTracker::App do
       it "does intercept request" do
         ActivityTracker::Interception.any_instance.should_receive(:execute_update_que)
         ActivityTracker::Interception.any_instance.should_receive(:complement_note)
-        ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
+        #app.stub(:response)#.and_return([200, {}, []])
+        #ActivityTracker::Interception.any_instance.stub(:response).and_return([200, {}, []])
+        ActivityTracker::App.any_instance.stub(:response).and_return('')
         get '/complement_note', :act_type=> 2, :params => 3
       end
     end

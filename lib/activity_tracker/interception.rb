@@ -1,10 +1,11 @@
 module ActivityTracker
   class Interception
-    attr_reader :batch
+    attr_reader :batch, :update_que
 
     def initialize env
       @env = env
       @batch = InsertBatch.restore @env['rack.moneta_store']
+      @update_que = UpdateQue.restore @env['rack.moneta_store']
     end
 
     def request
@@ -40,29 +41,25 @@ module ActivityTracker
     end
 
     def update_record
-      if batch.includes_record? 'act_type' => request.params['act_type'], 'params' => request.params['query']
-        add_to_update_que request.params
-      else
-        resp = EsRequest.find :act_type => request.params['act_type'], :query => request.params['query']
-        resp[1]['hits']['hits'].each do |hit|
-          note_id = hit['_id']  
-          @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params']
-        end
-
-      end
+      update_que.add request.params
     end
 
-    def record_to_update_in_batch? record_update
-      batch.any? do |batch_record| 
-        batch_record['act_type'] == record_update['act_type'] && batch_record['user_id'] == record_update['user_id'] && batch_record['params']['_id'] && record_update['query']['_id']
+    def find_records_for_update update
+      resp = EsRequest.find(:act_type => update['act_type'], :query => update['query'])
+      if resp[0] == 200
+        resp[1]['hits']['hits']
+      else 
+        []
       end
     end
 
     def execute_update_que
-      update_que.select { |update| !record_to_update_in_batch?(update) }.each do |update|
-        EsRequset.update :act_type => params['act_type'], :note_id => note_id, :params => params['params'].merge(:user_id => params['user_id'])
+      update_que.data.select { |update| !batch.includes_record?(update) }.each do |update|
+        find_records_for_update(update).each do |record|
+          EsRequset.update :act_type => update['act_type'], :note_id => record['_id'], :params => update['params']
+        end
       end
-      store['update_que'] = update_que.select { |update| !record_to_update_in_batch?(update) }
+      update_que.set = update_que.select { |update| batch.includes_record?(update) }
     end
 
     def response
@@ -90,14 +87,6 @@ module ActivityTracker
     end
 
   private
-
-    def add_to_update_que params
-      store['update_que'] = update_que << params
-    end
-
-    def update_que
-      store.fetch('update_que', [])
-    end
 
     def store
       @env['rack.moneta_store']
