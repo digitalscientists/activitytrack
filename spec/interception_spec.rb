@@ -3,7 +3,7 @@ require 'spec_helper'
 describe ActivityTracker::Interception do
   let(:interception) { ActivityTracker::Interception.new env}
   let(:env) { {} }
-  let(:request) { mock :request, :path_info => 'huy', :params => {:user_id => 1, :act_type => 2, :other_param => 3} }
+  let(:request) { mock :request, :path_info => 'path', :params => {:act_type => 1, :params => 2, :other_param => 3} }
 
 
     before :each do
@@ -17,7 +17,7 @@ describe ActivityTracker::Interception do
     end
     
     it 'adds action to batch' do
-      interception.should_receive(:add_to_batch).with({:user_id => 1, :act_type => 2})
+      interception.should_receive(:add_to_batch).with({:act_type => 1, :params => 2})
       interception.track_activity
     end
 
@@ -76,7 +76,7 @@ describe ActivityTracker::Interception do
   describe '#insert?' do
     context 'params are valid' do
       before :each do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
       end
       it 'returns true if request is update when path is "/track_activity"' do
         request.stub!(:path_info).and_return('/track_activity')
@@ -91,20 +91,16 @@ describe ActivityTracker::Interception do
       before :each do
         request.stub!(:path_info).and_return('/track_activity')
       end
-      it 'returns true if params includes "user_id", "act_type" and "params" parametrs' do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+      it 'returns true if params includes "act_type" and "params" parametrs' do
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
         interception.insert?.should be_true
       end
-      it 'returns false if request does not include "user_id" parametr' do
-        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
-        interception.insert?.should_not be_true
-      end
       it 'returns false if request does not include "act_type" parametr' do
-        request.stub(:params).and_return({'user_id' => 1, 'params' => 3})
+        request.stub(:params).and_return({'params' => 3})
         interception.insert?.should_not be_true
       end
       it 'returns false if request does not include "params" parametr' do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2})
+        request.stub(:params).and_return({'act_type' => 2})
         interception.insert?.should_not be_true
       end
     end
@@ -114,7 +110,7 @@ describe ActivityTracker::Interception do
   describe '#update?' do
     context 'params are valid' do
       before :each do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
       end
       it 'returns true if request is update when path is "/complement_note"' do
         request.stub!(:path_info).and_return('/complement_note')
@@ -129,20 +125,16 @@ describe ActivityTracker::Interception do
       before :each do
         request.stub!(:path_info).and_return('/complement_note')
       end
-      it 'returns true if params includes "user_id", "act_type" and "params" parametrs' do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2, 'params' => 3})
+      it 'returns true if params includes "act_type" and "params" parametrs' do
+        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
         interception.update?.should be_true
       end
-      it 'returns false if request does not include "user_id" parametr' do
-        request.stub(:params).and_return({'act_type' => 2, 'params' => 3})
-        interception.update?.should_not be_true
-      end
       it 'returns false if request does not include "act_type" parametr' do
-        request.stub(:params).and_return({'user_id' => 1, 'params' => 3})
+        request.stub(:params).and_return({'params' => 3})
         interception.update?.should_not be_true
       end
       it 'returns false if request does not include "params" parametr' do
-        request.stub(:params).and_return({'user_id' => 1, 'act_type' => 2})
+        request.stub(:params).and_return({'act_type' => 2})
         interception.update?.should_not be_true
       end
     end
@@ -155,7 +147,6 @@ describe ActivityTracker::Interception do
     let(:update_params) do
       {
         'act_type' => 'abs_act',
-        'user_id' => 'abs_user_id',
         'params' => {'key1' => 'value 1'},
         'query' => 'abs_query'
       }
@@ -195,7 +186,7 @@ describe ActivityTracker::Interception do
         ActivityTracker::EsRequest.should_receive(:update).with({
           :act_type => 'abs_act',
           :note_id => '11',
-          :params => {'key1' => 'value 1', 'user_id' => 'abs_user_id'}
+          :params => {'key1' => 'value 1'}
         })
         interception.update_record
       end

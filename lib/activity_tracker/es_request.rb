@@ -42,17 +42,13 @@ module ActivityTracker
     def body
       if @type == :insert
         @params.map do |act|
-          act['params']['item_id'] = act['params']['_id']
-          act['params'].reject!{|k,v| k == '_id'}
           [
             {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
-            ({'user_id' => act['user_id']}.merge(act['params'])).to_json
+            act['params'].to_json
           ]
         end.flatten.join("\n")
       elsif @type == :find
-        query = @params[:query].reject{|k,v| k == :_id}
-        query['item_id'] = @params[:query][:_id]
-        { :query => { :term => query } }.to_json
+        { :query => { :term => @params['query'] } }.to_json
       elsif @type == :update
         { 
           :script => @params[:params].keys.map{ |key| "ctx._source.#{key} = #{key}" }.join('; '),

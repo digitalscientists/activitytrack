@@ -96,20 +96,20 @@ module ActivityTracker
       it 'when insert request generate body for insert request' do
         request.type = :insert
         request.params = [
-          {'act_type' => 'action_one', 'user_id' => 'user_one', 'params' => {'param1' => 1, 'param2' => 2, '_id' => '1'}},
-          {'act_type' => 'action_two', 'user_id' => 'user_two', 'params' => {'param1' => 3, 'param2' => 4, '_id' => '2'}}
+          {'act_type' => 'action_one', 'params' => {'param1' => 1, 'param2' => 2}},
+          {'act_type' => 'action_two', 'params' => {'param1' => 3, 'param2' => 4}}
         ]
 
         request.body.should eq([
           '{"index":{"_index":"tracked_activities","_type":"action_one"}}',
-          '{"user_id":"user_one","param1":1,"param2":2,"item_id":"1"}',
+          '{"param1":1,"param2":2}',
           '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
-          '{"user_id":"user_two","param1":3,"param2":4,"item_id":"2"}',
+          '{"param1":3,"param2":4}',
         ].join("\n"))
       end
       it 'when find request generate body for find request' do
         request.type = :find
-        request.params = {:query => {:user_id => 'u1d', :_id => 'item_id'}}
+        request.params = {'query' => {'user_id' => 'u1d', 'item_id' => 'item_id'}}
         request.body.should eq('{"query":{"term":{"user_id":"u1d","item_id":"item_id"}}}')
       end
       it 'when update request generate body for update request' do

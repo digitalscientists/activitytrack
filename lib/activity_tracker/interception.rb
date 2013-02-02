@@ -10,11 +10,11 @@ module ActivityTracker
     end
 
     def insert?
-      request.path_info =~ /^\/track_activity.*/ && (request.params.keys & %w{user_id act_type params}).size == 3
+      request.path_info =~ /^\/track_activity.*/ && (request.params.keys & %w{act_type params}).size == 2
     end
 
     def update?
-      request.path_info =~ /^\/complement_note.*/ && (request.params.keys & %w{user_id act_type params}).size == 3
+      request.path_info =~ /^\/complement_note.*/ && (request.params.keys & %w{act_type params}).size == 2
     end
 
     def intercept?
@@ -44,7 +44,7 @@ module ActivityTracker
         resp = EsRequest.find :act_type => request.params['act_type'], :query => request.params['query']
         resp[1]['hits']['hits'].each do |hit|
           note_id = hit['_id']  
-          @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params'].merge('user_id' => request.params['user_id'])
+          @es_response = EsRequest.update :act_type => request.params['act_type'], :note_id => note_id, :params => request.params['params']
         end
 
       end
