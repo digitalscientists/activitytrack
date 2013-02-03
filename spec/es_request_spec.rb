@@ -109,7 +109,7 @@ module ActivityTracker
       end
       it 'when find request generate body for find request' do
         request.type = :find
-        request.params = {'query' => {'user_id' => 'u1d', 'item_id' => 'item_id'}}
+        request.params = {:query => {'user_id' => 'u1d', 'item_id' => 'item_id'}}
         request.body.should eq('{"query":{"term":{"user_id":"u1d","item_id":"item_id"}}}')
       end
       it 'when update request generate body for update request' do

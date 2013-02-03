@@ -1,8 +1,8 @@
-%w{version configuration es_request interception insert_batch update_que app}.each do |mod|
+%w{ version configuration es_request interception insert_batch update_que app}.each do |mod|
   if defined? Rails
-    require File.expand_path(File.dirname(__FILE__) + "/activity_tracker/#{mod}")
-  else
     require "activity_tracker/#{mod}"
+  else
+    load File.expand_path(File.dirname(__FILE__) + "/activity_tracker/#{mod}.rb")
   end
 end
 require 'activity_tracker/railtie' if defined? Rails

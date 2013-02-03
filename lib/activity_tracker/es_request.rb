@@ -16,8 +16,12 @@ module ActivityTracker
         @net ||= Net::HTTP.new('localhost',9200)
       end
 
-      def requests
+      def log
         @requests ||= {:insert => [], :find => [], :update => []}
+      end
+
+      def reset_log
+        @requests = {:insert => [], :find => [], :update => []}
       end
     end
 
@@ -51,7 +55,7 @@ module ActivityTracker
           ]
         end.flatten.join("\n")
       elsif @type == :find
-        { :query => { :term => @params['query'] } }.to_json
+        { :query => { :term => @params[:query] } }.to_json
       elsif @type == :update
         { 
           :script => @params[:params].keys.map{ |key| "ctx._source.#{key} = #{key}" }.join('; '),
@@ -61,7 +65,7 @@ module ActivityTracker
     end
 
     def process_response response
-      EsRequest.requests[type] << [path, params, response.code, response.body]
+      EsRequest.log[type] << [path, params ,body, response.code, response.body]
       if response.code == '200'
         [200, JSON.parse(response.body)]
       else

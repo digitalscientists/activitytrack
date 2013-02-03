@@ -37,7 +37,7 @@ module ActivityTracker
     end
 
     def push_batch
-      @es_response = EsRequest.insert @batch.data
+      EsRequest.insert batch.data
     end
 
     def update_record
@@ -56,34 +56,10 @@ module ActivityTracker
     def execute_update_que
       update_que.data.select { |update| !batch.includes_record?(update) }.each do |update|
         find_records_for_update(update).each do |record|
-          EsRequset.update :act_type => update['act_type'], :note_id => record['_id'], :params => update['params']
+          EsRequest.update :act_type => update['act_type'], :note_id => record['_id'], :params => update['params']
         end
       end
-      update_que.set = update_que.select { |update| batch.includes_record?(update) }
-    end
-
-    def response
-      unless es_response.nil?
-        if insert?
-          if es_response[0] == 200
-            [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
-          else
-            [400, {'Content-Type' => 'text/html'}, ['failed to insert data']]
-          end
-        elsif update?
-          if es_response[0] == 200
-            [200, {'Content-Type' => 'text/html'}, ['record updated']]
-          else
-            [400, {'Content-Type' => 'text/html'}, ['failed to update record']]
-          end
-        end
-      else
-         [200, {'Content-Type' => 'text/html'}, ['acivity stored']]
-      end
-    end
-
-    def es_response
-      @es_response
+      update_que.set update_que.data.select { |update| batch.includes_record?(update) }
     end
 
   private

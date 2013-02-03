@@ -19,7 +19,7 @@ module ActivityTracker
         data.select { |r| r['act_type'] == query['act_type'] }.
           map{ |r| r['params'] }.
           select do |r| 
-            ((query['params'].keys & r.keys).size == query['params'].keys.size) && query['params'].keys.inject(true){ |result, key| query['params'][key] == r[key] }
+            ((query['query'].keys & r.keys).size == query['query'].keys.size) && query['query'].keys.inject(true){ |result, key| query['query'][key] == r[key] }
           end.any?
 
       end

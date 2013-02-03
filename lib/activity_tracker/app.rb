@@ -14,24 +14,23 @@ module ActivityTracker
           interception.track_activity
         end
         interception.execute_update_que
-        [200, {'Content-Type' => 'html/text'}, response]
+        [200, {'Content-Type' => 'text/html'}, [response]]
       else
         @app.call env
       end
-    rescue Exception => e
-      puts e.inspect
     end
 
     def response
       string = ''
-      EsRequest.requests.each_pair do |type, requests|
+      EsRequest.log.each_pair do |type, requests|
         if requests.any?
           string += "<h1>#{type} requests:</h2>"
           string += requests.map do |request|
             "<ul><li>#{request.join('</li><li>')}</li></ul>"
-          end.join('hr')  
+          end.join('<hr>')  
         end
       end
+      EsRequest.reset_log
       string
     end
 
