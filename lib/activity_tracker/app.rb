@@ -8,12 +8,12 @@ module ActivityTracker
     def call env
       interception = Interception.new env
       if interception.intercept?
+        interception.execute_update_que
         if interception.update?
           interception.complement_note
         else
           interception.track_activity
         end
-        interception.execute_update_que
         [200, {'Content-Type' => 'text/html'}, [response]]
       else
         @app.call env
@@ -31,7 +31,7 @@ module ActivityTracker
         end
       end
       EsRequest.reset_log
-      string
+      string == '' ? 'no data pushed' : string
     end
 
   end

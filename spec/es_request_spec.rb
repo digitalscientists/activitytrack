@@ -105,7 +105,7 @@ module ActivityTracker
           '{"param1":1,"param2":2}',
           '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
           '{"param1":3,"param2":4}',
-        ].join("\n"))
+        ].join("\n") << "\n")
       end
       it 'when find request generate body for find request' do
         request.type = :find

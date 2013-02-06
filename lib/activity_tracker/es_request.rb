@@ -52,8 +52,8 @@ module ActivityTracker
           [
             {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
             act['params'].to_json
-          ]
-        end.flatten.join("\n")
+          ].join("\n")
+        end.flatten.join("\n") << "\n"
       elsif @type == :find
         { :query => { :term => @params[:query] } }.to_json
       elsif @type == :update
