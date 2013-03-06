@@ -15,4 +15,15 @@ describe ActivityTracker do
     config.batch_size.should eq(100)
   end
 
+  describe '#uri' do
+    it 'parses provided url provided to it' do
+      ActivityTracker.configure do |config|
+        config.url = 'http://user:password@somehost:8080'
+      end
+      URI.should_receive(:parse).with('http://user:password@somehost:8080')
+      ActivityTracker.configuration.uri
+    end
+  end
+
+
 end

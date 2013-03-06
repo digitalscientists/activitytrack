@@ -13,7 +13,8 @@ module ActivityTracker
       end
 
       def net
-        @net ||= Net::HTTP.new('localhost',9200)
+        uri = ActivityTracker.configuration.uri
+        @net ||= Net::HTTP.new(uri.host, uri.port)
       end
 
       def log
@@ -31,18 +32,27 @@ module ActivityTracker
     end
 
     def execute
-      http_request = Net::HTTP::Post.new(path)
-      http_request.body = body
       process_response EsRequest.net.request(http_request)
     end
 
+    def http_request
+      http_request = Net::HTTP::Post.new(path)
+      http_request.body = body
+      uri = ActivityTracker.configuration.uri
+      if !uri.password.nil? && !uri.user.nil?
+        http_request.basic_auth uri.user, uri.password
+      end
+      http_request
+    end
+
+
     def path
-      if @type == :insert
-        "/tracked_activities/_bulk"
+      "/#{ActivityTracker.configuration.index}" + if @type == :insert
+        "/_bulk"
       elsif @type == :find
-        "/tracked_activities/#{@params[:act_type]}/_search"
+        "/#{@params[:act_type]}/_search"
       elsif @type == :update
-        "/tracked_activities/#{@params[:act_type]}/#{@params[:note_id]}/_update"
+        "/#{@params[:act_type]}/#{@params[:note_id]}/_update"
       end
     end
 
@@ -50,7 +60,7 @@ module ActivityTracker
       if @type == :insert
         @params.map do |act|
           [
-            {'index' => {'_index' => 'tracked_activities', '_type' => act['act_type'],}}.to_json,
+            {'index' => {'_index' => ActivityTracker.configuration.index, '_type' => act['act_type'],}}.to_json,
             act['params'].to_json
           ].join("\n")
         end.flatten.join("\n") << "\n"
