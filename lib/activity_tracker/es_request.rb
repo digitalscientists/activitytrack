@@ -39,7 +39,7 @@ module ActivityTracker
       http_request = Net::HTTP::Post.new(path)
       http_request.body = body
       uri = ActivityTracker.configuration.uri
-      if !uri.password.nil? && !uri.user.nil?
+      unless uri.password.nil? || uri.user.nil?
         http_request.basic_auth uri.user, uri.password
       end
       http_request

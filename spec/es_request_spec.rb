@@ -2,10 +2,9 @@ require 'spec_helper'
 
 module ActivityTracker
   describe EsRequest do
-    let(:net){ mock :net_http_new }
     let(:request) {EsRequest.new :abstract_type, :abstract_params}
     before :each do
-      EsRequest.stub(:net).and_return(net)
+      #EsRequest.stub(:net).and_return(net)
       ActivityTracker.configure do |config|
         config.index = 'tracked_activities'
       end
@@ -41,10 +40,12 @@ module ActivityTracker
 
     describe '#execute' do
       let(:http_request) {mock :http_request}
+      let(:net){ mock :net_http_new }
       before :each do
         @request = EsRequest.new :type, :params
         @request.stub(:process_response)
         @request.stub(:http_request).and_return(http_request)
+        EsRequest.stub(:net).and_return(net)
         net.stub(:request).and_return('raw_es_response')
       end
 
@@ -170,6 +171,9 @@ module ActivityTracker
         request.stub(:body).and_return('body')
         http_request.stub(:body=)
         Net::HTTP::Post.stub(:new).and_return(http_request)
+        ActivityTracker.configure do |config|
+          config.url = 'http://somehost:8080'
+        end
       end
 
       it 'creates http request' do 
@@ -183,11 +187,14 @@ module ActivityTracker
       end
 
       context 'url provided in config includes username and password' do
-        it 'set basic_auth' do
+        before :each do
           ActivityTracker.configure do |config|
             config.url = 'http://user:password@somehost:8080'
           end
+        end
+        it 'set basic_auth' do
           http_request.should_receive(:basic_auth).with('user', 'password') 
+          request.http_request
         end
       end
     end
