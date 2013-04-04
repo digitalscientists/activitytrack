@@ -6,10 +6,15 @@ module ActivityTracker
       @env = env
       @batch = InsertBatch.restore @env['rack.moneta_store']
       @update_que = UpdateQue.restore @env['rack.moneta_store']
+      set_user_id_to_params
     end
 
     def request
       @request ||= Rack::Request.new @env
+    end
+
+    def set_user_id_to_params
+      request.params['params']['user_id'] = request.cookies['at_uid'] if !request.cookies['at_uid'].nil? && !request.params['params'].nil?
     end
 
     def insert?

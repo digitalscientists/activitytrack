@@ -20,7 +20,7 @@ use ActivityTracker::App
 run Proc.new {|env| [200, {'Content-Type' => 'text/html'}, ['
   <ul>
     <li>
-      <a href="/track_activity?act_type=abs_act&params[user_id]=1&params[title]=item_title&params[item_id]=123" >save record</a>
+      <a href="/track_activity?act_type=abs_act&params[title]=item_title&params[item_id]=123" >save record</a>
     </li>
     <li>
       <a href="/complement_note?act_type=abs_act&query[user_id]=1&params[color]=red&query[item_id]=123" >update record</a>
