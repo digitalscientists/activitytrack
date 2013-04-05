@@ -9,7 +9,7 @@ Each request should be supplied with params:
 -  act_type - action name, this is used as elasticsearch index type
 -  params - any information about action which optionly can include user identifier
 
-NOTE! Please do not use "_id" key because Elastic search fails to parse request if it hase value with key "_id".
+NOTE! If params will include parameter "_id" it will be used as id of apropriate document in ES
 
 request on "/track_activity" will create new document 
 

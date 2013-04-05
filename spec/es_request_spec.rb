@@ -96,20 +96,42 @@ module ActivityTracker
     end
     describe '#body' do
       let(:params){ {} }
-      it 'when insert request generate body for insert request' do
-        request.type = :insert
-        request.params = [
-          {'act_type' => 'action_one', 'params' => {'param1' => 1, 'param2' => 2}},
-          {'act_type' => 'action_two', 'params' => {'param1' => 3, 'param2' => 4}}
-        ]
+      context 'insert request' do
+        before :each do
+          request.type = :insert
+        end
+        it 'generates body forinsert request' do
+          request.params = [
+            {'act_type' => 'action_one', 'params' => {'param1' => 1, 'param2' => 2}},
+            {'act_type' => 'action_two', 'params' => {'param1' => 3, 'param2' => 4}}
+          ]
 
-        request.body.should eq([
-          '{"index":{"_index":"tracked_activities","_type":"action_one"}}',
-          '{"param1":1,"param2":2}',
-          '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
-          '{"param1":3,"param2":4}',
-        ].join("\n") << "\n")
+          request.body.should eq([
+            '{"index":{"_index":"tracked_activities","_type":"action_one"}}',
+            '{"param1":1,"param2":2}',
+            '{"index":{"_index":"tracked_activities","_type":"action_two"}}',
+            '{"param1":3,"param2":4}',
+          ].join("\n") << "\n")
+        end
+
+        it 'moves "_id" parametr  from params to action meta_data' do
+          request.params = [
+            {'act_type' => 'action_one', 'params' => {'_id' => 1, 'param2' => 2}},
+            {'act_type' => 'action_two', 'params' => {'_id' => 3, 'param2' => 4}}
+          ]
+
+          request.body.should eq([
+            '{"index":{"_index":"tracked_activities","_type":"action_one","_id":1}}',
+            '{"param2":2}',
+            '{"index":{"_index":"tracked_activities","_type":"action_two","_id":3}}',
+            '{"param2":4}',
+          ].join("\n") << "\n")
+
+        end
+
       end
+
+
       it 'when find request generate body for find request' do
         request.type = :find
         request.params = {:query => {'user_id' => 'u1d', 'item_id' => 'item_id'}}

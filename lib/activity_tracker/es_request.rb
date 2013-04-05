@@ -59,9 +59,15 @@ module ActivityTracker
     def body
       if @type == :insert
         @params.map do |act|
+          meta_data = {'_index' => ActivityTracker.configuration.index, '_type' => act['act_type']}
+          params = act['params']
+          unless params['_id'].nil?
+            meta_data['_id'] = params['_id']
+            params.delete('_id')
+          end
           [
-            {'index' => {'_index' => ActivityTracker.configuration.index, '_type' => act['act_type'],}}.to_json,
-            act['params'].to_json
+            {'index' => meta_data}.to_json,
+            params.to_json
           ].join("\n")
         end.flatten.join("\n") << "\n"
       elsif @type == :find
