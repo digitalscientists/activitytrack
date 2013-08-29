@@ -1,7 +1,7 @@
 activity track
 =============
 
-Activity Track tracks user activity and stores it in ElasticSearch to personalize user experience across the web, email and in-app notifications..
+Activity Track tracks user activity and stores it in ElasticSearch to personalize user experience across the web, email and in-app notifications.
 
 This gem is to be used as middleware with rails. When installed it will intercept all requests with the path "/track_activity" or "/complement_note" and will store data provided with requests into elastic search in the tracked_activities index.
 
