@@ -19,7 +19,7 @@ The above request creates {'item_id': '10', 'title': 'awesome_title', 'user_id':
 
 Note that the records will persisted suing a batch process. The batch is written to ES when 50 records are collected to improve write performance.
 
-Te "/complement_note" end point updates an existing record insted of creating a new one.
+Te "/complement_note" end point updates an existing record instead of creating a new one.
 
 This request should also should be supplied with query param. This parameter should follow a single level key-value structure.
 
