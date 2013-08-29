@@ -40,14 +40,14 @@ To run initializer
 
     rails g activity_tracker:install
 
-this will add activity_tracker.rb to config/initializers of your application.
+Adds activity_tracker.rb to config/initializers of your application.
 
-there you can set size of batches which is set to 50 by default
+Config file supports the size of batches. Defaults to 50.
 
 TODO
 -------------
 
 add ability to configure index_name.
-add ability to change default paths for insert update requests.
+add ability to change default paths for insert & update requests.
 
 
