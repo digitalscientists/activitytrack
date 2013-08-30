@@ -1,0 +1,56 @@
+body {
+        padding-top: 20px;
+        padding-bottom: 40px;
+		
+      }
+
+      /* Custom container */
+      .container-narrow {
+        margin: 0 auto;
+        max-width: 900px;
+		
+      }
+      .container-narrow > hr {
+        margin: 30px 0;
+      }
+
+      /* Main marketing message and sign up button */
+      .jumbotron {
+        margin: 60px 0 40px;
+        text-align: center;
+      }
+      .jumbotron h1 {
+        font-size: 72px;
+        line-height: 1;
+      }
+      .jumbotron .btn {
+        font-size: 21px;
+        padding: 14px 24px;
+      }
+
+      /* Supporting marketing content */
+      .marketing {
+        margin: 30px 0;
+      }
+      .marketing p + h4 {
+        margin-top: 28px;
+      }
+	  
+	  .lightbox-list img{
+
+		border:1px solid #021a40;
+		margin: 3px;
+		width: 230px;
+		height: 110px;
+
+		
+	  }
+	  .span6 {
+	  min-width: 300px;
+	  }
+	  .lightbox-list {
+		overflow-x:hidden;
+		overflow-y:hidden;
+		height: 115px;
+		text-align: center;
+	  }
