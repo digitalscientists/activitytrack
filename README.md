@@ -17,18 +17,18 @@ Example: /track_activity request
 
 The above request creates {'item_id': '10', 'title': 'awesome_title', 'user_id': '1'} in index /tracked_activies/item_added
 
-Note that the records will persisted suing a batch process. The batch is written to ES when 50 records are collected to improve write performance.
+Note that the records will persisted using a batch process. The batch is written to Elastic Search when 50 records are collected. This helps improve write performance on Elastic Search when writing a large number of records.
 
-Te "/complement_note" end point updates an existing record instead of creating a new one.
+The "/complement_note" end point updates an existing record instead of creating a new one.
 
-This request should also should be supplied with query param. This parameter should follow a single level key-value structure.
+This request should also should be supplied with a query param and should follow a single level key-value structure.
 
 
 Example of /complement_note request:
 
     /track_activity?act_type=item_added&query[user_id]=1&query[item_id]=10&params[color]=red
 
-This request will search in /tracked_activities/item_added index for the document with user_id=1 and item_id=10. The color param is then set to 'red'.
+This request will search in /tracked_activities/item_added index for the document, with user_id=1 and item_id=10. The color param for that record is then set to 'red'.
 
 
 To install, add the following to your rails application Gemfile:
@@ -42,7 +42,7 @@ To run initializer
 
 Adds activity_tracker.rb to config/initializers of your application.
 
-Config file supports the size of batches. Defaults to 50.
+Config file supports the size of batches written to Elastic Search. Defaults to 50.
 
 TODO
 -------------
