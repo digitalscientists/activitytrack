@@ -25,7 +25,7 @@ module ActivityTracker
     end
 
     def track_activity
-      batch.add 'act_type' => request.params['act_type'], 'params' => request.params['params']
+      batch.add 'act_type' => request.params['act_type'], 'params' => request.params['params'].merge(timestamp: Time.now)
       if batch.full?
         push_batch
         batch.clear
